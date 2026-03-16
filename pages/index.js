@@ -73,7 +73,36 @@ function AnalysisBlock({ label, children }) {
   );
 }
 
+function ApiKeyInstructions() {
+  return (
+    <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: '20px 24px', marginBottom: 24 }}>
+      <div style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--green)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>One-time setup — 3 minutes</div>
+      <p style={{ fontSize: 13, color: 'var(--text2)', lineHeight: 1.7, marginBottom: 16 }}>
+        This tool runs on Anthropic's AI. You need a free API key — it costs roughly <strong style={{ color: 'var(--text)' }}>$0.20–0.40 per analysis</strong> charged directly to your Anthropic account. No subscription, pay only when you use it.
+      </p>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {[
+          ['1', 'Go to', 'console.anthropic.com', 'https://console.anthropic.com', 'and create a free account'],
+          ['2', 'Click', 'API Keys', null, '→ Create Key → copy it'],
+          ['3', 'Add a credit card and deposit', '$5', null, '— enough for 15–25 analyses'],
+          ['4', 'Paste your key below', '', null, 'and run your first analysis'],
+        ].map(([num, pre, link, href, post]) => (
+          <div key={num} style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+            <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'var(--green-dim)', border: '1px solid rgba(45,204,143,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
+              <span style={{ fontFamily: 'var(--mono)', fontSize: 10, color: 'var(--green)' }}>{num}</span>
+            </div>
+            <p style={{ fontSize: 13, color: 'var(--text2)', lineHeight: 1.6, margin: 0 }}>
+              {pre} {href ? <a href={href} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--green)' }}>{link}</a> : <strong style={{ color: 'var(--text)' }}>{link}</strong>} {post}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
+  const [apiKey, setApiKey] = useState('');
   const [industry, setIndustry] = useState('');
   const [c1, setC1] = useState('');
   const [c2, setC2] = useState('');
@@ -85,8 +114,15 @@ export default function Home() {
   const [loadingPct, setLoadingPct] = useState(0);
   const [results, setResults] = useState(null);
   const [errorMsg, setErrorMsg] = useState('');
+  const [keyValid, setKeyValid] = useState(false);
+
+  function checkKey(val) {
+    setApiKey(val);
+    setKeyValid(val.startsWith('sk-ant-') && val.length > 20);
+  }
 
   async function runAnalysis() {
+    if (!keyValid) { alert('Please enter a valid Anthropic API key first.'); return; }
     if (!industry.trim() || !c1.trim() || !c2.trim() || !c3.trim()) {
       alert('Please fill in the industry and all 3 seed competitors.');
       return;
@@ -114,6 +150,7 @@ export default function Home() {
           competitors: [c1.trim(), c2.trim(), c3.trim()],
           company: company.trim(),
           geo: geo.trim() || 'Global',
+          apiKey,
         }),
       });
 
@@ -176,6 +213,17 @@ export default function Home() {
               <p style={s.subtitle}>Drop 3 known competitors. This engine expands the competitive set, pulls observable revenue signals from public sources, and derives a sourced market sizing — no guesswork required from you.</p>
             </div>
 
+            <ApiKeyInstructions />
+
+            <div style={{ marginBottom: 24 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 14px' }}>
+                <div style={{ width: 8, height: 8, borderRadius: '50%', background: keyValid ? 'var(--green)' : 'var(--text3)', flexShrink: 0, boxShadow: keyValid ? '0 0 6px rgba(45,204,143,0.5)' : 'none', transition: 'all 0.3s' }} />
+                <label style={{ fontFamily: 'var(--mono)', fontSize: 11, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '0.08em', whiteSpace: 'nowrap' }}>Your API Key</label>
+                <input type="password" value={apiKey} onChange={e => checkKey(e.target.value)} placeholder="sk-ant-..." style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--text)' }} />
+              </div>
+              <p style={{ ...s.hint, marginTop: 6 }}>Your key is never stored — it's used only for this request and never logged.</p>
+            </div>
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div>
                 <label style={s.fieldLabel}>Industry / Market</label>
@@ -206,7 +254,9 @@ export default function Home() {
               </div>
             </div>
 
-            <button style={s.runBtn} onClick={runAnalysis}>Run Market Intelligence</button>
+            <button style={{ ...s.runBtn, opacity: keyValid ? 1 : 0.5 }} onClick={runAnalysis} disabled={!keyValid}>
+              Run Market Intelligence
+            </button>
 
             <div style={s.disclaimer}>
               Revenue figures are derived from SEC filings, disclosed earnings, Crunchbase/PitchBook public profiles, Latka, Sacra, LinkedIn headcount proxies, and credible analyst estimates. Pune-based data aggregators are explicitly excluded. Private company figures are labeled as estimates. All outputs are directional only.
@@ -260,7 +310,7 @@ export default function Home() {
               <div style={{ display: 'flex', gap: 1, background: 'var(--border)', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden', marginBottom: 12 }}>
                 <MetricCard label="Total Addressable Market" value={fmtM(d.tam_m)} sub="observable base + expansion" color="#2dcc8f" />
                 <MetricCard label="Serviceable Addressable" value={fmtM(d.sam_m)} sub={`${d.geography} serviceable segment`} color="#e8a94a" />
-                <MetricCard label="Obtainable · 3yr" value={fmtM(d.som_m)} sub={`${company || 'new entrant'} · 3yr horizon`} color="#9b8af4" />
+                <MetricCard label="Obtainable · 3yr" value={fmtM(d.som_m)} sub={`new entrant · 3yr horizon`} color="#9b8af4" />
               </div>
 
               <div style={{ display: 'flex', gap: 10, marginBottom: 24 }}>
