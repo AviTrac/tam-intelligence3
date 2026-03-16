@@ -1,0 +1,62 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&family=Playfair+Display:wght@400;500&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0d0d0d;
+  --surface: #141414;
+  --surface2: #1a1a1a;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.13);
+  --text: #f0ede8;
+  --text2: #8a8680;
+  --text3: #5a5754;
+  --green: #2dcc8f;
+  --green-dim: rgba(45,204,143,0.12);
+  --amber: #e8a94a;
+  --amber-dim: rgba(232,169,74,0.12);
+  --purple: #9b8af4;
+  --purple-dim: rgba(155,138,244,0.12);
+  --red: #e05a4e;
+  --red-dim: rgba(224,90,78,0.1);
+  --mono: 'DM Mono', monospace;
+  --sans: 'DM Sans', sans-serif;
+  --serif: 'Playfair Display', serif;
+  --radius: 8px;
+  --radius-lg: 12px;
+}
+
+html, body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; line-height: 1.6; min-height: 100vh; }
+
+a { color: var(--green); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+input, button { font-family: var(--sans); }
+
+button {
+  cursor: pointer;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--text2);
+  border-radius: var(--radius);
+  padding: 10px 20px;
+  font-size: 13px;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+button:hover { border-color: var(--text2); color: var(--text); }
+button:active { transform: scale(0.98); }
+button:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+
+input[type="text"], input[type="password"] {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  color: var(--text);
+  font-size: 14px;
+  outline: none;
+  width: 100%;
+  transition: border-color 0.2s;
+}
+input[type="text"]:focus, input[type="password"]:focus { border-color: var(--border2); }
+input::placeholder { color: var(--text3); }
